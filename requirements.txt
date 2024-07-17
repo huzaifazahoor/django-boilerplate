@@ -1,6 +1,6 @@
-Django==5.0.7          # The web framework used for developing the project
+Django==4.2.14         # The web framework used for developing the project
 gunicorn==22.0.0       # WSGI HTTP Server for UNIX, used for deploying the app on App Engine
 python-dotenv==1.0.1   # Reads environment variables from a .env file
 psycopg2-binary==2.9.9 # For connecting with pgSQL database
-# yfinance==0.2.40       # To fetch financial data from Yahoo Finance (not used currently)
-# pandas==2.2.2          # Data manipulation and analysis library (not used currently)
+# yfinance==0.2.40     # To fetch financial data from Yahoo Finance (not used currently)
+# pandas==2.2.2        # Data manipulation and analysis library (not used currently)

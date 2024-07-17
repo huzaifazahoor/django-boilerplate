@@ -15,10 +15,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Setup python 3.9
+      - name: Setup python 3.11
         uses: actions/setup-python@v2
         with:
-          python-version: "3.9"
+          python-version: "3.11"
 
       - name: Copy secrets to .env
         run: |
@@ -53,11 +53,3 @@ jobs:
           version: v1
           project_id: ${{ secrets.PROJECT_ID }}
           credentials: ${{ secrets.SERVICE_ACCOUNT }}
-
-      - name: Deploy Dispatch Configuration
-        uses: google-github-actions/deploy-appengine@v0.2.0
-        with:
-          deliverables: dispatch.yaml
-          project_id: ${{ secrets.PROJECT_ID }}
-          credentials: ${{ secrets.SERVICE_ACCOUNT }}
-  
