@@ -29,7 +29,7 @@ urlpatterns = [
             """
         <html>
             <head>
-                <title>Site Under Maintenance - Meyka</title>
+                <title>Site Under Development</title>
                 <style>
                     html, body {
                 height: 100%;

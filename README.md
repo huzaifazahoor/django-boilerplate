@@ -12,6 +12,7 @@ Features
 -   Database configuration for both SQLite (development) and PostgreSQL (production)
 -   Simple CI/CD pipeline configuration with GitHub Actions
 -   Deployment-ready for Google App Engine
+-   Added the cloud sql proxy as well.
 
 Setup
 -----
@@ -27,7 +28,7 @@ Setup
 1.  **Clone the repository:**
 
     ```bash
-    git clone https://github.com/your-username/django-boilerplate.git
+    git clone https://github.com/huzaifazahoor/django-boilerplate.git
     cd django-boilerplate
     ```
 
@@ -89,6 +90,7 @@ project_core/
 ├── .gitignore
 ├── app.yaml
 ├── README.md
+├── cloud_sql_proxy.exe
 ```
 
 Deployment
