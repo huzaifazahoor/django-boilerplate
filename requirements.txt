@@ -4,3 +4,7 @@ python-dotenv==1.0.1   # Reads environment variables from a .env file
 psycopg2-binary==2.9.9 # For connecting with pgSQL database
 # yfinance==0.2.40     # To fetch financial data from Yahoo Finance (not used currently)
 # pandas==2.2.2        # Data manipulation and analysis library (not used currently)
+djangorestframework==3.15.2
+djangorestframework-simplejwt==5.3.1
+stripe==10.5.0
+django-cors-headers==4.4.0
