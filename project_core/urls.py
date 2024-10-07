@@ -18,11 +18,21 @@ Including another URLconf
 import os
 
 from django.contrib import admin
+from django.contrib.sitemaps.views import sitemap
 from django.http import HttpResponse, JsonResponse
-from django.urls import path
+from django.shortcuts import render
+from django.urls import include, path
+
+from .sitemap import StaticViewSitemap
+
+sitemaps = {
+    "static": StaticViewSitemap,
+}
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("sitemap.xml", sitemap, {"sitemaps": sitemaps}, name="sitemap"),
+    path("accounts/", include("authentication.urls")),
     path(
         "",
         lambda request: HttpResponse(
@@ -49,8 +59,25 @@ urlpatterns = [
                 <h1>Under Development<br>Please check back soon!</h1>
             </body>
         </html>
-    """
+    """,
         ),
+        name="home",
     ),
     path("env/", lambda request: JsonResponse(dict(os.environ))),
+    path(
+        "privacy-policy/",
+        lambda request: render(request, "privacy_policy.html"),
+        name="privacy_policy",
+    ),
+    path(
+        "terms-of-service/",
+        lambda request: render(request, "terms_of_service.html"),
+        name="terms_of_service",
+    ),
+    path(
+        "robots.txt",
+        lambda request: HttpResponse(
+            open("robots.txt").read(), content_type="text/plain"
+        ),
+    ),
 ]

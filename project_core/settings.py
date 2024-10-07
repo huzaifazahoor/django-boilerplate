@@ -47,12 +47,13 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.humanize",
+    "django.contrib.sitemaps",
     "rest_framework",
     "rest_framework_simplejwt.token_blacklist",
     "corsheaders",
     "authentication",
-    "jwt_authentication",
-    "stripe_integration",
+    # "jwt_authentication",
+    # "stripe_integration",
 ]
 
 MIDDLEWARE = [
@@ -144,29 +145,28 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = "static/"
-STATIC_ROOT = BASE_DIR / "static/"
+STATIC_URL = "/static/"
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-AUTHENTICATION_BACKENDS = (
-    "jwt_authentication.backends.EmailOrUsernameModelBackend",
-    "django.contrib.auth.backends.ModelBackend",
-)
+AUTH_USER_MODEL = "authentication.CustomUser"
 
-REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
-    ),
-}
+LOGIN_REDIRECT_URL = "dashboard"
+LOGOUT_REDIRECT_URL = "public_dashboard"
 
-SIMPLE_JWT = {
-    "AUTH_HEADER_TYPES": ("Bearer",),
-    "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
-}
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "in-v3.mailjet.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
+DEFAULT_FROM_EMAIL = "Name <noreply@Domain.com>"
 
 # settings.py
 if os.getenv("SERVER") == "production":

@@ -1,76 +1,120 @@
+from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import authenticate, login, update_session_auth_hash
+from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth.views import LoginView
+from django.core.mail import send_mail
 from django.shortcuts import redirect, render
+from django.urls import reverse
+from django.utils.encoding import force_bytes, force_str
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 
 from .forms import CustomUserCreationForm
+from .models import CustomUser
+from .tokens import email_verification_token
 
 
-def login_view(request):
-    if request.method == "POST":
-        username = request.POST.get("username")
-        password = request.POST.get("password")
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(request, user)
-            return redirect("profile")
-        else:
-            messages.error(request, "Invalid username or password.")
-    return render(request, "authentication/login.html")
+class CustomLoginView(LoginView):
+    template_name = "authentication/login.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return redirect(
+                "public_dashboard"
+            )  # Redirect to dashboard if already logged in
+        return super().dispatch(request, *args, **kwargs)
 
 
-def register(request):
+def signup(request):
+    if request.user.is_authenticated:
+        return redirect("public_dashboard")
     if request.method == "POST":
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
-            form.save()
-            messages.success(request, "Registration successful! Please log in.")
-            return redirect("login")
-        else:
-            messages.error(
-                request, "Registration failed. Please correct the error below."
+            user = form.save(commit=False)
+            user.is_verify = False
+            user.save()
+
+            # Generate token and UID
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            token = email_verification_token.make_token(user)
+
+            # Send verification email
+            verification_link = request.build_absolute_uri(
+                reverse("verify_email", args=[uid, token])
             )
+            send_mail(
+                "Verify your email address",
+                f"Please click this link to verify your email: {verification_link}",
+                settings.DEFAULT_FROM_EMAIL,
+                [user.email],
+                fail_silently=False,
+            )
+
+            messages.success(
+                request,
+                (
+                    "Please check your email to verify your account. "
+                    "This helps ensure accurate salary data and improves your experience on SalaryScout. "
+                ),
+            )
+            return redirect("login")
     else:
         form = CustomUserCreationForm()
-    return render(request, "authentication/register.html", {"form": form})
+    return render(request, "authentication/signup.html", {"form": form})
+
+
+def verify_email(request, uidb64, token):
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = CustomUser.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, CustomUser.DoesNotExist):
+        user = None
+
+    if user is not None and email_verification_token.check_token(user, token):
+        user.is_verify = True
+        user.save()
+        login(request, user)
+        messages.success(request, "Your email has been verified. Welcome!")
+        return redirect("public_dashboard")
+    else:
+        messages.error(request, "The verification link was invalid or has expired.")
+        return redirect("login")
 
 
 @login_required
-def profile(request):
-    if request.method == "POST":
-        form = PasswordChangeForm(request.user, request.POST)
-        if form.is_valid():
-            user = form.save()
-            update_session_auth_hash(request, user)  # Important!
-            messages.success(request, "Your password was successfully updated!")
-            return redirect("profile")
-        else:
-            messages.error(request, "Please correct the error below.")
-    else:
-        form = PasswordChangeForm(request.user)
-
-    if (
-        request.method == "POST"
-        and "first_name" in request.POST
-        and "last_name" in request.POST
-    ):
-        user = request.user
-        user.first_name = request.POST.get("first_name")
-        user.last_name = request.POST.get("last_name")
-        user.save()
-        messages.success(request, "Your profile was successfully updated!")
-        return redirect("profile")
-
+def resend_verification_email(request):
     user = request.user
-    user_data = {
-        "username": user.username,
-        "first_name": user.first_name,
-        "last_name": user.last_name,
-        "email": user.email,
-        "password": user.password,
-    }
 
-    return render(
-        request, "authentication/profile.html", {"form": form, "user_data": user_data}
-    )
+    if not user.is_verify:
+        # Send the verification email
+        # Generate token and UID
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        token = email_verification_token.make_token(user)
+
+        # Send verification email
+        verification_link = request.build_absolute_uri(
+            reverse("verify_email", args=[uid, token])
+        )
+        subject = "Verify your email address"
+        message = f"Please click this link to verify your email: {verification_link}"
+        from_email = settings.DEFAULT_FROM_EMAIL
+        recipient_list = [request.user.email]
+
+        send_mail(
+            subject,
+            message,
+            from_email,
+            recipient_list,
+            fail_silently=False,
+        )
+
+        # Add success message
+        messages.success(
+            request, "Verification email has been resent. Please check your inbox."
+        )
+    else:
+        # Add info message if already verified
+        messages.info(request, "Your account is already verified.")
+
+    return redirect("public_dashboard")
