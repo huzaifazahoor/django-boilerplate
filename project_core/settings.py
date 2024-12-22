@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 import os
+import sys
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -20,16 +21,17 @@ load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
+sys.path.insert(0, str(BASE_DIR))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
+SERVER = os.getenv("SERVER")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-if os.getenv("SERVER") == "development":
+if SERVER == "development":
     DEBUG = True
 else:
     DEBUG = False
@@ -48,12 +50,12 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.humanize",
     "django.contrib.sitemaps",
+    # Third party apps
     "rest_framework",
     "rest_framework_simplejwt.token_blacklist",
     "corsheaders",
-    "authentication",
-    # "jwt_authentication",
-    # "stripe_integration",
+    # Local apps
+    "apps.authentication",
 ]
 
 MIDDLEWARE = [
@@ -91,7 +93,7 @@ WSGI_APPLICATION = "project_core.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-if os.getenv("SERVER") == "production":
+if SERVER == "production":
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",
@@ -156,24 +158,40 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 AUTH_USER_MODEL = "authentication.CustomUser"
 
-LOGIN_REDIRECT_URL = "dashboard"
-LOGOUT_REDIRECT_URL = "public_dashboard"
+LOGIN_REDIRECT_URL = "home"
+LOGOUT_REDIRECT_URL = "home"
+LOGIN_URL = "login"
 
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = "in-v3.mailjet.com"
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
-EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
-DEFAULT_FROM_EMAIL = "Name <noreply@Domain.com>"
+# CORS Settings
+CORS_ALLOW_ALL_ORIGINS = True if DEBUG else False
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://localhost:8000",
+]
 
-# settings.py
-if os.getenv("SERVER") == "production":
-    STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
-    STRIPE_PUBLISHABLE_KEY = os.getenv("STRIPE_PUBLISHABLE_KEY")
-else:
-    STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY_TEST")
-    STRIPE_PUBLISHABLE_KEY = os.getenv("STRIPE_PUBLISHABLE_KEY_TEST")
+# Security Settings for Production
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    X_FRAME_OPTIONS = "DENY"
+
+# Cache settings (can be configured later based on needs)
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+    }
+}
+
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+# EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+# EMAIL_HOST = "in-v3.mailjet.com"
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
+# EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
+# DEFAULT_FROM_EMAIL = "Name <noreply@Domain.com>"
 
 CORS_ALLOW_ALL_ORIGINS = True

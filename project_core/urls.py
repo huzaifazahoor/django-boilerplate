@@ -32,7 +32,7 @@ sitemaps = {
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("sitemap.xml", sitemap, {"sitemaps": sitemaps}, name="sitemap"),
-    path("accounts/", include("authentication.urls")),
+    path("accounts/", include("apps.authentication.urls")),
     path(
         "",
         lambda request: HttpResponse(

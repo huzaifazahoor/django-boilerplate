@@ -3,6 +3,9 @@ name: Deploy Cloud Functions
 on:
   push:
     branches: [dummy-branch]
+    paths:
+      - 'scripts/**'
+      - 'scripts_new/**'
   workflow_dispatch:
 
 jobs:

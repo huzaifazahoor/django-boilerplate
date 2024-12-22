@@ -1,24 +1,35 @@
-# authentication/urls.py
-
 from django.contrib.auth import views as auth_views
 from django.urls import path
+from django.views.decorators.cache import never_cache
+from django.views.decorators.csrf import csrf_protect
 
 from . import views
+
+app_name = "authentication"
 
 urlpatterns = [
     path(
         "login/",
-        views.CustomLoginView.as_view(),
+        never_cache(csrf_protect(views.CustomLoginView.as_view())),
         name="login",
     ),
-    path("logout/", auth_views.LogoutView.as_view(), name="logout"),
-    path("signup/", views.signup, name="signup"),
-    # Password reset views
+    path(
+        "logout/",
+        never_cache(auth_views.LogoutView.as_view(next_page="authentication:login")),
+        name="logout",
+    ),
+    path("signup/", never_cache(csrf_protect(views.signup)), name="signup"),
     path(
         "password_reset/",
-        auth_views.PasswordResetView.as_view(
-            template_name="authentication/password_reset.html",
-            email_template_name="authentication/password_reset_email.html",
+        never_cache(
+            csrf_protect(
+                auth_views.PasswordResetView.as_view(
+                    template_name="authentication/password_reset.html",
+                    email_template_name="authentication/password_reset_email.html",
+                    html_email_template_name="authentication/password_reset_email.html",
+                    subject_template_name="authentication/password_reset_subject.txt",
+                )
+            )
         ),
         name="password_reset",
     ),
