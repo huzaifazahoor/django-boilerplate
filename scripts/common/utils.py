@@ -2,9 +2,11 @@ import logging
 import os
 import time
 
+import numpy as np
 import pandas as pd
 import psycopg2
 import requests
+import yfinance as yf
 from dotenv import load_dotenv
 from psycopg2 import OperationalError, extras
 
@@ -169,17 +171,28 @@ def add_delay():
     time.sleep(2)
 
 
-def convert_to_float(value):
-    """
-    Convert a value to float if it is not None or a string.
-    Returns:
-        float: The converted float value if conversion is possible.
-        None: If the input value is None or a string.
-    """
-    if value is not None and not pd.isna(value):
-        try:
+def convert_value(value):
+    if value is None or pd.isna(value):
+        return None
+
+    try:
+        if isinstance(value, (np.bool_, bool)):
+            return bool(value)
+        elif isinstance(value, (np.floating, float)):
             return float(value)
-        except (ValueError, TypeError):
-            # Handle the case where the conversion is not possible
-            return None
-    return None
+        elif isinstance(value, (np.integer, int)):
+            return int(value)
+        return value
+    except (ValueError, TypeError):
+        return None
+
+
+def get_historical_data(symbol, period="1y", interval="1d"):
+    try:
+        ticker = yf.Ticker(symbol)
+        df = ticker.history(period=period, interval=interval)
+        if df.empty and period != "max":
+            df = ticker.history(period="max", interval=interval)
+        return df
+    except Exception:
+        return pd.DataFrame()

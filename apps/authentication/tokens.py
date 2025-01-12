@@ -1,19 +1,14 @@
-import six
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 
 
 class EmailVerificationTokenGenerator(PasswordResetTokenGenerator):
     def _make_hash_value(self, user, timestamp):
-        """
-        Hash using user pk, timestamp, email, and verification status
-        to ensure token becomes invalid if any of these change
-        """
         return (
-            six.text_type(user.pk)
-            + six.text_type(timestamp)
-            + six.text_type(user.email)
-            + six.text_type(user.is_verified)
-            + six.text_type(user.password)
+            str(user.pk)
+            + str(timestamp)
+            + str(user.email)
+            + str(user.is_verified)
+            + str(user.password)
         )
 
 

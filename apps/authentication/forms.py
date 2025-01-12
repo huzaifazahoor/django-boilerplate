@@ -10,7 +10,6 @@ class CustomUserCreationForm(UserCreationForm):
         required=True,
         widget=forms.EmailInput(
             attrs={
-                "class": "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm",
                 "placeholder": "you@example.com",
             }
         ),
@@ -19,7 +18,6 @@ class CustomUserCreationForm(UserCreationForm):
         required=False,
         widget=forms.TextInput(
             attrs={
-                "class": "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm",
                 "placeholder": "username",
             }
         ),
@@ -28,7 +26,6 @@ class CustomUserCreationForm(UserCreationForm):
         required=True,
         widget=forms.TextInput(
             attrs={
-                "class": "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm",
                 "placeholder": "John",
             }
         ),
@@ -37,7 +34,6 @@ class CustomUserCreationForm(UserCreationForm):
         required=True,
         widget=forms.TextInput(
             attrs={
-                "class": "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm",
                 "placeholder": "Doe",
             }
         ),
@@ -45,14 +41,14 @@ class CustomUserCreationForm(UserCreationForm):
     password1 = forms.CharField(
         widget=forms.PasswordInput(
             attrs={
-                "class": "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm",
+                "placeholder": "*********",
             }
         )
     )
     password2 = forms.CharField(
         widget=forms.PasswordInput(
             attrs={
-                "class": "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm",
+                "placeholder": "*********",
             }
         )
     )
@@ -70,12 +66,12 @@ class CustomUserCreationForm(UserCreationForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["password1"].widget.attrs["class"] = "form-control"
-        self.fields["password2"].widget.attrs["class"] = "form-control"
+        for field in self.fields.values():
+            field.widget.attrs["class"] = "form-control"
 
     def clean_email(self):
         email = self.cleaned_data.get("email")
-        if CustomUser.objects.filter(email=email).exists():
+        if CustomUser.objects.exclude(pk=self.instance.pk).filter(email=email).exists():
             raise forms.ValidationError(_("This email address is already in use."))
         return email
 

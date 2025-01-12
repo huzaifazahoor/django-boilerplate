@@ -1,5 +1,5 @@
 
-# Yahoo Stock Screener by Raja
+# Stock Screener
 
 Describe your project here. A brief description of what the project does and who it's for.
 

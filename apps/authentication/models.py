@@ -1,12 +1,13 @@
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.db import models
-from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+
+from apps.core.models import TimeStampMixin
 
 from .managers import CustomUserManager
 
 
-class CustomUser(AbstractBaseUser, PermissionsMixin):
+class CustomUser(AbstractBaseUser, PermissionsMixin, TimeStampMixin):
     email = models.EmailField(
         _("email address"),
         unique=True,
@@ -51,7 +52,6 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         default=False,
         help_text=_("Designates whether this user has verified their email address."),
     )
-    date_joined = models.DateTimeField(_("date joined"), default=timezone.now)
 
     objects = CustomUserManager()
 
@@ -61,16 +61,11 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     class Meta:
         verbose_name = _("user")
         verbose_name_plural = _("users")
-        ordering = ["-date_joined"]
+        ordering = ["-created_at"]
 
     def __str__(self):
         return self.email
 
     def get_full_name(self):
-        """Return the first_name plus the last_name, with a space in between."""
         full_name = f"{self.first_name} {self.last_name}"
         return full_name.strip()
-
-    def get_short_name(self):
-        """Return the short name for the user."""
-        return self.first_name

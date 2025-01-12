@@ -87,14 +87,19 @@ def send_verification_email(request, user):
         "If you didn't request this, you can safely ignore this email."
     )
 
-    send_mail(
-        _("Verify your email address"),
-        plain_message,
-        settings.DEFAULT_FROM_EMAIL,
-        [user.email],
-        html_message=html_message,
-        fail_silently=False,
-    )
+    try:
+        send_mail(
+            _("Verify your email address"),
+            plain_message,
+            settings.DEFAULT_FROM_EMAIL,
+            [user.email],
+            html_message=html_message,
+            fail_silently=False,
+        )
+    except Exception:
+        messages.error(
+            request, _("Failed to send verification email. Please try again later.")
+        )
 
 
 @require_http_methods(["GET"])

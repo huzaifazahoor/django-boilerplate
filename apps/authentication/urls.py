@@ -5,8 +5,6 @@ from django.views.decorators.csrf import csrf_protect
 
 from . import views
 
-app_name = "authentication"
-
 urlpatterns = [
     path(
         "login/",
@@ -15,7 +13,7 @@ urlpatterns = [
     ),
     path(
         "logout/",
-        never_cache(auth_views.LogoutView.as_view(next_page="authentication:login")),
+        never_cache(auth_views.LogoutView.as_view(next_page="login")),
         name="logout",
     ),
     path("signup/", never_cache(csrf_protect(views.signup)), name="signup"),
@@ -42,8 +40,10 @@ urlpatterns = [
     ),
     path(
         "reset/<uidb64>/<token>/",
-        auth_views.PasswordResetConfirmView.as_view(
-            template_name="authentication/password_reset_confirm.html"
+        never_cache(
+            auth_views.PasswordResetConfirmView.as_view(
+                template_name="authentication/password_reset_confirm.html"
+            )
         ),
         name="password_reset_confirm",
     ),
@@ -56,7 +56,7 @@ urlpatterns = [
     ),
     path(
         "verify-email/<str:uidb64>/<str:token>/",
-        views.verify_email,
+        csrf_protect(views.verify_email),
         name="verify_email",
     ),
     path(
